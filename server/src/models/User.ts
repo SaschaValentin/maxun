@@ -11,6 +11,9 @@ interface UserAttributes {
     proxy_url?: string | null;
     proxy_username?: string | null;
     proxy_password?: string | null;
+    proxy_pool?: string | null;
+    proxy_pool_username?: string | null;
+    proxy_pool_password?: string | null;
 }
 
 interface UserCreationAttributes extends Optional<UserAttributes, 'id'> { }
@@ -24,6 +27,9 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
     public proxy_url!: string | null;
     public proxy_username!: string | null;
     public proxy_password!: string | null;
+    public proxy_pool!: string | null;
+    public proxy_pool_username!: string | null;
+    public proxy_pool_password!: string | null;
 }
 
 User.init(
@@ -70,6 +76,18 @@ User.init(
             // },
         },
         proxy_password: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        proxy_pool: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        proxy_pool_username: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        proxy_pool_password: {
             type: DataTypes.STRING,
             allowNull: true,
         },
