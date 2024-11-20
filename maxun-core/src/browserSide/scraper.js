@@ -340,5 +340,34 @@ function scrapableHeuristics(maxCountPerPage = 50, minArea = 20000, scrolls = 3,
 
     return results;
   };
+
+  window.captureUserData = function () {
+    const trackableFields = ['input', 'textarea', 'select'];
+    const capturedInputs = []; // Array to store captured inputs
+
+    document.querySelectorAll(trackableFields.join(',')).forEach(field => {
+        const eventType = field.tagName === 'SELECT' ? 'change' : 'input';
+
+        field.addEventListener(eventType, () => {
+            const selector = GetSelectorStructural(field);
+            let value;
+
+            // Handle different field types appropriately
+            if (field.tagName === 'SELECT') {
+                value = field.value; // For dropdowns, get the selected value
+            } else if (field.tagName === 'TEXTAREA' || field.tagName === 'INPUT') {
+                value = field.value; // For text inputs and textareas
+            } else {
+                return; // Skip unhandled field types
+            }
+
+            // Add the captured input to the array
+            capturedInputs.push({ where: selector, what: value });
+        });
+    });
+
+    // Return the array of captured inputs
+    return capturedInputs;
+  };
   
 })(window);
