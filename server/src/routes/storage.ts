@@ -120,11 +120,12 @@ function formatRunResponse(run: any) {
 router.put('/recordings/:id', requireSignIn, async (req: AuthenticatedRequest, res) => {
   try {
     const { id } = req.params;
-    const { name, limit } = req.body;
+    const { name, limit, targetUrl } = req.body;
 
-    // Validate input
-    if (!name && limit === undefined) {
-      return res.status(400).json({ error: 'Either "name" or "limit" must be provided.' });
+    if (!name && limit === undefined && !targetUrl) {
+      return res.status(400).json({
+        error: 'At least one of "name", "limit", or "targetUrl" must be provided.',
+      });
     }
 
     // Fetch the robot by ID
@@ -179,9 +180,26 @@ router.put('/recordings/:id', requireSignIn, async (req: AuthenticatedRequest, r
       }
     }
 
-    await robot.save();
+    if (targetUrl) {
+      const updatedWorkflow = robot.recording.workflow.map((step) => {
+        if (step.where?.url && step.where.url !== "about:blank") {
+          step.where.url = targetUrl;
+        }
+  
+        step.what.forEach((action) => {
+          if (action.action === "goto" && action.args?.length) {
+            action.args[0] = targetUrl; 
+          }
+        });
+  
+        return step;
+      });
 
-    const updatedRobot = await Robot.findOne({ where: { 'recording_meta.id': id } });
+      robot.set('recording', { ...robot.recording, workflow: updatedWorkflow });
+      robot.changed('recording', true);
+    }
+    
+    await robot.save();
 
     logger.log('info', `Robot with ID ${id} was updated successfully.`);
 
