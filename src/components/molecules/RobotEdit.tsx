@@ -82,6 +82,24 @@ export const RobotEditModal = ({ isOpen, handleStart, handleClose, initialSettin
         );
     };
 
+    const handleTargetUrlChange = (newUrl: string) => {
+        setRobot((prev) => {
+            if (!prev) return prev;
+    
+            const updatedWorkflow = [...prev.recording.workflow];
+            const lastPairIndex = updatedWorkflow.length - 1;
+            
+            if (lastPairIndex >= 0) {
+                const gotoAction = updatedWorkflow[lastPairIndex]?.what?.find(action => action.action === "goto");
+                if (gotoAction && gotoAction.args && gotoAction.args.length > 0) {
+                    gotoAction.args[0] = newUrl;
+                }
+            }
+    
+            return { ...prev, recording: { ...prev.recording, workflow: updatedWorkflow } };
+        });
+    };
+
     const handleLimitChange = (newLimit: number) => {
         setRobot((prev) => {
             if (!prev) return prev;
@@ -106,9 +124,13 @@ export const RobotEditModal = ({ isOpen, handleStart, handleClose, initialSettin
         if (!robot) return;
 
         try {
+            const lastPair = robot.recording.workflow[robot.recording.workflow.length - 1];
+            const targetUrl = lastPair?.what.find(action => action.action === "goto")?.args?.[0];
+
             const payload = {
                 name: robot.recording_meta.name,
                 limit: robot.recording.workflow[0]?.what[0]?.args?.[0]?.limit,
+                targetUrl: targetUrl,
             };
 
             const success = await updateRecording(robot.recording_meta.id, payload);
@@ -130,6 +152,10 @@ export const RobotEditModal = ({ isOpen, handleStart, handleClose, initialSettin
         }
     };
 
+    const lastPair = robot?.recording.workflow[robot?.recording.workflow.length - 1];
+
+    const targetUrl = lastPair?.what.find(action => action.action === "goto")?.args?.[0];
+
     return (
         <GenericModal
             isOpen={isOpen}
@@ -142,9 +168,22 @@ export const RobotEditModal = ({ isOpen, handleStart, handleClose, initialSettin
                     {
                         robot && (
                             <>
+                                <span>While editing the robot URL, please keep in mind:</span>
+                                <br />
+                                <span>
+                                <b>⚠️ Ensure the new page has the same structure as the original page.</b>
+                                </span>
                                 <TextField
-                                    label="Change Robot Name"
-                                    key="Change Robot Name"
+                                    label="Robot Target URL"
+                                    key="Robot Target URL"
+                                    type='text'
+                                    value={targetUrl || ''}
+                                    onChange={(e) => handleTargetUrlChange(e.target.value)}
+                                    style={{ marginBottom: '20px', marginTop: '15px' }}
+                                />
+                                <TextField
+                                    label="Robot Name"
+                                    key="Robot Name"
                                     type='text'
                                     value={robot.recording_meta.name}
                                     onChange={(e) => handleRobotNameChange(e.target.value)}
