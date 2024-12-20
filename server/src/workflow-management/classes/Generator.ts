@@ -390,6 +390,17 @@ export class WorkflowGenerator {
       return;
     }
 
+    const isFileInput = elementInfo?.tagName === 'INPUT' && elementInfo?.attributes?.type === 'file';
+    
+    if (isFileInput) {
+        // Notify client to show file upload overlay
+        this.socket.emit('showFileUpload', {
+            coordinates,
+            selector
+        });
+        return;
+    }
+
     //const element = await getElementMouseIsOver(page, coordinates);
     //logger.log('debug', `Element: ${JSON.stringify(element, null, 2)}`);
     if (selector) {
