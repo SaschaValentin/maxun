@@ -45,7 +45,7 @@ services:
       #dockerfile: server/Dockerfile
     image: getmaxun/maxun-backend:latest
     ports:
-      - "${BACKEND_PORT:-8080}:${BACKEND_PORT:-8080}"
+      - "${BACKEND_PORT:-7080}:${BACKEND_PORT:-7080}"
     env_file: .env
     environment:
       BACKEND_URL: ${BACKEND_URL}
